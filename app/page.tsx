@@ -1,8 +1,8 @@
 'use client'
 
-import { AuthProvider, useAuth } from '@/frontend/context/auth-context'
-import { LoginForm } from '@/frontend/components/login-form'
-import { Dashboard } from '@/frontend/components/dashboard'
+import { AuthProvider, useAuth } from '@/components/frontend/context/auth-context'
+import { LoginForm } from '@/components/frontend/components/login-form'
+import { Dashboard } from '@/components/frontend/components/dashboard'
 import { Loader2 } from 'lucide-react'
 
 function AppContent() {

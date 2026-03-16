@@ -34,13 +34,13 @@ export function LoginForm() {
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#2D72D9' }}>
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
-          <img 
-            src="/images/logo-cmp.png" 
-            alt="CMP Logo" 
+          <img
+            src="/images/logo-cmp.png"
+            alt="CMP Logo"
             className="h-16 object-contain"
           />
         </div>
-        
+
         <Card className="border-0 shadow-2xl">
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-2xl font-semibold text-foreground">
@@ -57,7 +57,7 @@ export function LoginForm() {
                   <AlertDescription className="text-destructive">{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-foreground">Usuario</Label>
                 <div className="relative">
@@ -74,7 +74,7 @@ export function LoginForm() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-foreground">Contraseña</Label>
                 <div className="relative">
@@ -91,10 +91,10 @@ export function LoginForm() {
                   />
                 </div>
               </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full mt-6" 
+
+              <Button
+                type="submit"
+                className="w-full mt-6"
                 style={{ backgroundColor: '#2D72D9' }}
                 disabled={isLoading}
               >
