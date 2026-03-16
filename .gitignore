@@ -1,18 +1,26 @@
-# v0 sandbox internal files
+# Dependencias y Build
+node_modules/
+.next/
+out/
+build/
+
+# Archivos de entorno (Seguridad)
+.env
+.env.local
+.env.production
+.env.development.local
+
+# Logs y Debug
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# Herramientas de Sandbox (v0)
 __v0_runtime_loader.js
 __v0_devtools.tsx
-__v0_jsx-dev-runtime.ts
-.npmrc
 .snowflake/
 .v0-trash/
 .vercel/
-next.user-config.*
 
-# Environment variables
-.env*.local
-
-# Common ignores
-node_modules/
-.next/
+# Sistema
 .DS_Store
-.vercel

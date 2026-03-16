@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { clearSessionCookie } from '@/backend/lib/jwt'
-import { ApiResponse } from '@/backend/types'
+import { clearSessionCookie } from '@/lib/backend/lib/jwt'
+import { ApiResponse } from '@/lib/backend/types'
 
 export async function POST() {
   try {
     await clearSessionCookie()
-    
+
     return NextResponse.json<ApiResponse>({
       success: true,
       message: 'Sesión cerrada exitosamente',
