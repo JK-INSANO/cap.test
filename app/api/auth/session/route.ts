@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getSession } from '@/backend/lib/jwt'
-import { ApiResponse } from '@/backend/types'
+import { getSession } from '@/lib/backend/lib/jwt'
+import { ApiResponse } from '@/lib/backend/types'
 
 export async function GET() {
   try {

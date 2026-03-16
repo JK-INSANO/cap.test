@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { signToken, setSessionCookie } from '@/backend/lib/jwt'
-import { db } from '@/backend/lib/db'
-import { LoginRequest, ApiResponse } from '@/backend/types'
+import { signToken, setSessionCookie } from '@/lib/backend/lib/jwt'
+import { db } from '@/lib/backend/lib/db'
+import { LoginRequest, ApiResponse } from '@/lib/backend/types'
 
 export async function POST(request: Request) {
   try {

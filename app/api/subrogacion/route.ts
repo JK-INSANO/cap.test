@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { getSession } from '@/backend/lib/jwt'
-import { db } from '@/backend/lib/db'
-import { SubrogacionRequest, ApiResponse } from '@/backend/types'
+import { getSession } from '@/lib/backend/lib/jwt'
+import { db } from '@/lib/backend/lib/db'
+import { SubrogacionRequest, ApiResponse } from '@/lib/backend/types'
 
 // Validar formato de RUT chileno
 function isValidRut(rut: string): boolean {
