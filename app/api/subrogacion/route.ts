@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/backend/lib/jwt'
-import { db } from '@/lib/backend/lib/db'
+import { PrismaClient } from '@prisma/client'
+import { ejecutarBotSubrogacion } from '@/lib/backend/services/sap-bot'
 import { SubrogacionRequest, ApiResponse } from '@/lib/backend/types'
 
-// Validar formato de RUT chileno
-function isValidRut(rut: string): boolean {
-  const rutPattern = /^[0-9]{1,2}\.[0-9]{3}\.[0-9]{3}-[0-9kK]$/
-  return rutPattern.test(rut)
-}
+const prisma = new PrismaClient()
 
 export async function POST(request: Request) {
   try {
@@ -31,22 +28,14 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!isValidRut(rutUsuarioSubrogado)) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Formato de RUT Usuario Subrogado inválido. Use formato: XX.XXX.XXX-X' },
-        { status: 400 }
-      )
+    // Convertir de formato DD.MM.YYYY (SAP) a un objeto Date válido para Prisma
+    const parseDateFromDots = (dateStr: string) => {
+      const [day, month, year] = dateStr.split('.')
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
     }
 
-    if (!isValidRut(rutUsuarioSubrogante)) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Formato de RUT Usuario Subrogante inválido. Use formato: XX.XXX.XXX-X' },
-        { status: 400 }
-      )
-    }
-
-    const fechaInicioDate = new Date(fechaInicio)
-    const fechaFinDate = new Date(fechaFin)
+    const fechaInicioDate = parseDateFromDots(fechaInicio)
+    const fechaFinDate = parseDateFromDots(fechaFin)
 
     if (fechaInicioDate >= fechaFinDate) {
       return NextResponse.json<ApiResponse>(
@@ -62,18 +51,36 @@ export async function POST(request: Request) {
       )
     }
 
-    const newSubrogacion = db.subrogaciones.create({
+    const newSubrogacion = await prisma.subrogacion.create({
+      data: {
+        rutUsuarioSubrogado,
+        rutUsuarioSubrogante,
+        fechaInicio: fechaInicioDate,
+        fechaFin: fechaFinDate,
+        createdBy: session.userId,
+      }
+    })
+
+    // Disparar el Bot de SAP en segundo plano (o esperado)
+    const sapResult = await ejecutarBotSubrogacion({
       rutUsuarioSubrogado,
       rutUsuarioSubrogante,
       fechaInicio,
-      fechaFin,
-      createdBy: session.userId,
+      fechaFin
     })
 
-    return NextResponse.json<ApiResponse>({
+    if (sapResult && !sapResult.success) {
+      return NextResponse.json(
+        { success: false, error: sapResult.error || 'Error al conectar con SAP iRPA' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
       success: true,
       data: newSubrogacion,
-      message: 'Subrogación creada exitosamente',
+      jobUid: sapResult?.jobUid,
+      message: 'Subrogación creada y bot de SAP iniciado exitosamente',
     })
   } catch (error) {
     console.error('Subrogacion error:', error)
@@ -95,7 +102,14 @@ export async function GET() {
       )
     }
 
-    const subrogaciones = db.subrogaciones.findByCreator(session.userId)
+    const subrogaciones = await prisma.subrogacion.findMany({
+      where: {
+        createdBy: session.userId
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
 
     return NextResponse.json<ApiResponse>({
       success: true,

@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  username      String         @unique
+  password      String         
+  email         String         @unique
+  subrogaciones Subrogacion[]  @relation("UserHistory")
+  createdAt     DateTime       @default(now())
+}
+
+model Subrogacion {
+  id                   String   @id @default(cuid())
+  rutUsuarioSubrogado  String
+  rutUsuarioSubrogante String
+  fechaInicio          DateTime
+  fechaFin             DateTime
+  createdAt            DateTime @default(now())
+  createdBy            String
+  author               User     @relation("UserHistory", fields: [createdBy], references: [id])
+}

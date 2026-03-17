@@ -15,7 +15,7 @@ export function Header() {
             <img
               src="/images/logo-cmp.png"
               alt="CMP Logo"
-              className="h-1000 object-contain"
+              className="h-10 object-contain"
             />
             <div className="hidden sm:block">
               <h1 className="text-lg font-semibold">Sistema de Subrogación</h1>

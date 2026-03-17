@@ -37,7 +37,7 @@ export function LoginForm() {
           <img
             src="/images/logo-cmp.png"
             alt="CMP Logo"
-            className="h-16 object-contain"
+            className="h-20 object-contain"
           />
         </div>
 
