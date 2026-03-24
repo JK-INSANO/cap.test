@@ -266,16 +266,26 @@ export function SubrogacionForm() {
                       <th className="text-left py-3 px-2 font-medium">Fin</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {subrogaciones.map((sub) => (
-                      <tr key={sub.id} className="border-b last:border-0">
-                        <td className="py-3 px-2">{sub.rutUsuarioSubrogado}</td>
-                        <td className="py-3 px-2">{sub.rutUsuarioSubrogante}</td>
-                        <td className="py-3 px-2">{sub.fechaInicio}</td>
-                        <td className="py-3 px-2">{sub.fechaFin}</td>
-                      </tr>
-                    ))}
-                  </tbody>
+                    <tbody>
+                      {subrogaciones.map((sub) => {
+                        // Previene el típico bug de JavaScript donde las fechas retroceden 1 día por culpa del Timezone (UTC-3 vs UTC-0)
+                        const formatTableDate = (isoDate: string) => {
+                          if (!isoDate) return '';
+                          const datePart = isoDate.split('T')[0];
+                          const [year, month, day] = datePart.split('-');
+                          return `${day}-${month}-${year}`;
+                        };
+
+                        return (
+                          <tr key={sub.id} className="border-b last:border-0">
+                            <td className="py-3 px-2">{sub.rutUsuarioSubrogado}</td>
+                            <td className="py-3 px-2">{sub.rutUsuarioSubrogante}</td>
+                            <td className="py-3 px-2">{formatTableDate(sub.fechaInicio)}</td>
+                            <td className="py-3 px-2">{formatTableDate(sub.fechaFin)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                 </table>
               </div>
             )}
