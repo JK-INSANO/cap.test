@@ -9,7 +9,7 @@ const PROTECTED_ROUTES = ['/api/subrogacion']
 /** Rutas públicas de autenticación (no requieren token) */
 const PUBLIC_AUTH_ROUTES = ['/api/auth/login', '/api/auth/logout']
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
 
   // Solo interceptar rutas de API protegidas
