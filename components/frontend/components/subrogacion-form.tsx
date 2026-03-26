@@ -31,17 +31,12 @@ export function SubrogacionForm() {
   const [showHistory, setShowHistory] = useState(false)
 
   const formatRut = (value: string) => {
-    // Remove all non-alphanumeric characters
     let rut = value.replace(/[^0-9kK]/g, '')
-    
     if (rut.length > 1) {
-      // Format: XX.XXX.XXX-X
       const dv = rut.slice(-1)
       const numbers = rut.slice(0, -1)
-      
       let formatted = ''
       let count = 0
-      
       for (let i = numbers.length - 1; i >= 0; i--) {
         formatted = numbers[i] + formatted
         count++
@@ -50,10 +45,8 @@ export function SubrogacionForm() {
           count = 0
         }
       }
-      
       return formatted + '-' + dv.toUpperCase()
     }
-    
     return rut
   }
 
@@ -69,21 +62,33 @@ export function SubrogacionForm() {
     setIsLoading(true)
 
     try {
+      // Formatear RUT: quitar puntos para el bot
+      const cleanRutSubrogado = formData.rutUsuarioSubrogado.replace(/\./g, '')
+      const cleanRutSubrogante = formData.rutUsuarioSubrogante.replace(/\./g, '')
+
+      // Formatear Fechas: de YYYY-MM-DD a DD.MM.YYYY para SAP
+      const formatDateToDots = (dateStr: string) => {
+        if (!dateStr) return ''
+        const [year, month, day] = dateStr.split('-')
+        return `${day}.${month}.${year}`
+      }
+
+      // Llamada a nuestra API interna (esto protege las llaves de SAP)
       const response = await fetch('/api/subrogacion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          rutUsuarioSubrogado: formData.rutUsuarioSubrogado,
-          rutUsuarioSubrogante: formData.rutUsuarioSubrogante,
-          fechaInicio: formData.fechaInicio,
-          fechaFin: formData.fechaFin,
+          rutUsuarioSubrogado: cleanRutSubrogado,
+          rutUsuarioSubrogante: cleanRutSubrogante,
+          fechaInicio: formatDateToDots(formData.fechaInicio),
+          fechaFin: formatDateToDots(formData.fechaFin),
         }),
       })
 
       const data = await response.json()
 
-      if (data.success) {
-        setSuccess('Subrogación registrada exitosamente')
+      if (response.ok && data.success) {
+        setSuccess(`Subrogación registrada. Job ID: ${data.jobUid}`)
         setFormData({
           rutUsuarioSubrogado: '',
           rutUsuarioSubrogante: '',
@@ -92,11 +97,11 @@ export function SubrogacionForm() {
         })
         fetchSubrogaciones()
       } else {
-        setError(data.error || 'Error al registrar subrogación')
+        setError(data.error || 'Error al conectar con SAP iRPA')
       }
     } catch (err) {
       console.error('Submit error:', err)
-      setError('Error de conexión')
+      setError('Error de conexión con el servidor')
     } finally {
       setIsLoading(false)
     }
@@ -106,19 +111,14 @@ export function SubrogacionForm() {
     try {
       const response = await fetch('/api/subrogacion')
       const data = await response.json()
-      
-      if (data.success) {
-        setSubrogaciones(data.data)
-      }
+      if (data.success) setSubrogaciones(data.data)
     } catch (err) {
       console.error('Fetch error:', err)
     }
   }
 
   const handleShowHistory = () => {
-    if (!showHistory) {
-      fetchSubrogaciones()
-    }
+    if (!showHistory) fetchSubrogaciones()
     setShowHistory(!showHistory)
   }
 
@@ -133,7 +133,7 @@ export function SubrogacionForm() {
             <div>
               <CardTitle className="text-xl">Registro de Subrogación</CardTitle>
               <CardDescription>
-                Complete el formulario para registrar una nueva subrogación
+                Complete el formulario para activar el bot de subrogación en SAP
               </CardDescription>
             </div>
           </div>
@@ -145,7 +145,7 @@ export function SubrogacionForm() {
                 <AlertDescription className="text-destructive">{error}</AlertDescription>
               </Alert>
             )}
-            
+
             {success && (
               <Alert className="bg-green-50 border-green-200">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -169,9 +169,6 @@ export function SubrogacionForm() {
                   required
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Persona que será reemplazada
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -189,9 +186,6 @@ export function SubrogacionForm() {
                   required
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Persona que asumirá las funciones
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -226,8 +220,8 @@ export function SubrogacionForm() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="flex-1"
                 style={{ backgroundColor: '#2D72D9' }}
                 disabled={isLoading}
@@ -235,15 +229,14 @@ export function SubrogacionForm() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Registrando...
+                    Ejecutando Bot en SAP...
                   </>
                 ) : (
                   'Registrar Subrogación'
                 )}
               </Button>
-              
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 onClick={handleShowHistory}
               >
@@ -256,38 +249,43 @@ export function SubrogacionForm() {
 
       {showHistory && (
         <Card className="border shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Historial de Subrogaciones</CardTitle>
-            <CardDescription>
-              Registros creados en esta sesión
-            </CardDescription>
+          <CardHeader>
+            <CardTitle className="text-lg">Historial Reciente</CardTitle>
           </CardHeader>
           <CardContent>
             {subrogaciones.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                No hay subrogaciones registradas
-              </p>
+              <p className="text-center text-muted-foreground py-8">No hay registros</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">RUT Subrogado</th>
-                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">RUT Subrogante</th>
-                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">Fecha Inicio</th>
-                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">Fecha Fin</th>
+                      <th className="text-left py-3 px-2 font-medium">Subrogado</th>
+                      <th className="text-left py-3 px-2 font-medium">Subrogante</th>
+                      <th className="text-left py-3 px-2 font-medium">Inicio</th>
+                      <th className="text-left py-3 px-2 font-medium">Fin</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {subrogaciones.map((sub) => (
-                      <tr key={sub.id} className="border-b last:border-0">
-                        <td className="py-3 px-2">{sub.rutUsuarioSubrogado}</td>
-                        <td className="py-3 px-2">{sub.rutUsuarioSubrogante}</td>
-                        <td className="py-3 px-2">{new Date(sub.fechaInicio).toLocaleDateString('es-CL')}</td>
-                        <td className="py-3 px-2">{new Date(sub.fechaFin).toLocaleDateString('es-CL')}</td>
-                      </tr>
-                    ))}
-                  </tbody>
+                    <tbody>
+                      {subrogaciones.map((sub) => {
+                        // Previene el típico bug de JavaScript donde las fechas retroceden 1 día por culpa del Timezone (UTC-3 vs UTC-0)
+                        const formatTableDate = (isoDate: string) => {
+                          if (!isoDate) return '';
+                          const datePart = isoDate.split('T')[0];
+                          const [year, month, day] = datePart.split('-');
+                          return `${day}-${month}-${year}`;
+                        };
+
+                        return (
+                          <tr key={sub.id} className="border-b last:border-0">
+                            <td className="py-3 px-2">{sub.rutUsuarioSubrogado}</td>
+                            <td className="py-3 px-2">{sub.rutUsuarioSubrogante}</td>
+                            <td className="py-3 px-2">{formatTableDate(sub.fechaInicio)}</td>
+                            <td className="py-3 px-2">{formatTableDate(sub.fechaFin)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                 </table>
               </div>
             )}

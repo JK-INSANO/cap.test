@@ -1,9 +1,11 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'cmp-secret-key-change-in-production-2024'
-)
+if (!process.env.JWT_SECRET) {
+  throw new Error('Falta la variable de entorno JWT_SECRET')
+}
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET)
 
 const TOKEN_NAME = 'cmp-auth-token'
 
@@ -44,7 +46,7 @@ export async function setSessionCookie(token: string) {
   const cookieStore = await cookies()
   cookieStore.set(TOKEN_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     sameSite: 'lax',
     maxAge: 60 * 60 * 8, // 8 hours
     path: '/',

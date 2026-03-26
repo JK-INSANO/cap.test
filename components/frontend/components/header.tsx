@@ -12,24 +12,24 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
-            <img 
-              src="/images/logo-cmp.png" 
-              alt="CMP Logo" 
-              className="h-8 object-contain"
+            <img
+              src="/images/logo-cmp.png"
+              alt="CMP Logo"
+              className="h-10 object-contain"
             />
             <div className="hidden sm:block">
               <h1 className="text-lg font-semibold">Sistema de Subrogación</h1>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">{user?.username}</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={logout}
               className="text-primary-foreground hover:bg-[#1e5bb8] hover:text-primary-foreground"
             >
