@@ -1,20 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '../context/auth-context'
+import Image from 'next/image'
+import { useAuth } from '@/components/providers/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ErrorAlert } from '@/components/ui/error-alert'
 import { Loader2, User, Lock } from 'lucide-react'
 
 export function LoginForm() {
   const { login } = useAuth()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [username, setUsername] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [error, setError] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,13 +32,16 @@ export function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#2D72D9' }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-cmp-blue">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
-          <img
+          <Image
             src="/images/logo-cmp.png"
             alt="CMP Logo"
-            className="h-20 object-contain"
+            width={200}
+            height={80}
+            className="h-20 w-auto object-contain"
+            priority
           />
         </div>
 
@@ -52,11 +56,7 @@ export function LoginForm() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
-                  <AlertDescription className="text-destructive">{error}</AlertDescription>
-                </Alert>
-              )}
+              <ErrorAlert message={error} />
 
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-foreground">Usuario</Label>
@@ -94,8 +94,7 @@ export function LoginForm() {
 
               <Button
                 type="submit"
-                className="w-full mt-6"
-                style={{ backgroundColor: '#2D72D9' }}
+                className="w-full mt-6 bg-cmp-blue hover:bg-cmp-blue-dark"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -109,18 +108,21 @@ export function LoginForm() {
               </Button>
             </form>
 
-            <div className="mt-6 pt-4 border-t text-center">
-              <p className="text-xs text-muted-foreground">
-                Usuario demo: <span className="font-medium">admin</span> / Contraseña: <span className="font-medium">admin123</span>
-              </p>
-            </div>
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-6 pt-4 border-t text-center">
+                <p className="text-xs text-muted-foreground">
+                  Usuario demo: <span className="font-medium">admin</span> / Contraseña: <span className="font-medium">admin123</span>
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm mt-6" style={{ color: 'rgba(255,255,255,0.7)' }}>
+        <p className="text-center text-sm mt-6 text-white/70">
           Compañía Minera del Pacífico S.A.
         </p>
       </div>
     </div>
   )
 }
+

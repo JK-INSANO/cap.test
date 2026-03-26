@@ -1,12 +1,31 @@
 import { NextResponse } from 'next/server'
-import { getSession } from '@/lib/backend/lib/jwt'
-import { PrismaClient } from '@prisma/client'
-import { ejecutarBotSubrogacion } from '@/lib/backend/services/sap-bot'
-import { SubrogacionRequest, ApiResponse } from '@/lib/backend/types'
+import { z } from 'zod'
+import { getSession } from '@/lib/server/jwt'
+import { prisma } from '@/lib/server/prisma'
+import { ejecutarBotSubrogacion } from '@/lib/server/services/sap-bot'
+import { ApiResponse } from '@/lib/types'
+import { parseDateFromDots } from '@/lib/date-utils'
 
-const prisma = new PrismaClient()
+const SubrogacionSchema = z.object({
+  rutUsuarioSubrogado: z
+    .string()
+    .min(1, 'El RUT del usuario subrogado es requerido')
+    .regex(/^[0-9]+-[0-9kK]$/, 'Formato de RUT inválido (ej: 12345678-9)'),
+  rutUsuarioSubrogante: z
+    .string()
+    .min(1, 'El RUT del usuario subrogante es requerido')
+    .regex(/^[0-9]+-[0-9kK]$/, 'Formato de RUT inválido (ej: 12345678-9)'),
+  fechaInicio: z
+    .string()
+    .min(1, 'La fecha de inicio es requerida')
+    .regex(/^[0-9]{2}\.[0-9]{2}\.[0-9]{4}$/, 'Formato de fecha inválido (DD.MM.YYYY)'),
+  fechaFin: z
+    .string()
+    .min(1, 'La fecha de fin es requerida')
+    .regex(/^[0-9]{2}\.[0-9]{2}\.[0-9]{4}$/, 'Formato de fecha inválido (DD.MM.YYYY)'),
+})
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<ApiResponse>> {
   try {
     const session = await getSession()
 
@@ -17,22 +36,19 @@ export async function POST(request: Request) {
       )
     }
 
-    const body: SubrogacionRequest = await request.json()
-    const { rutUsuarioSubrogado, rutUsuarioSubrogante, fechaInicio, fechaFin } = body
+    const body = await request.json()
 
-    // Validaciones
-    if (!rutUsuarioSubrogado || !rutUsuarioSubrogante || !fechaInicio || !fechaFin) {
+    // Validación con Zod
+    const validationResult = SubrogacionSchema.safeParse(body)
+
+    if (!validationResult.success) {
       return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Todos los campos son requeridos' },
+        { success: false, error: validationResult.error.errors[0].message },
         { status: 400 }
       )
     }
 
-    // Convertir de formato DD.MM.YYYY (SAP) a un objeto Date válido para Prisma
-    const parseDateFromDots = (dateStr: string) => {
-      const [day, month, year] = dateStr.split('.')
-      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-    }
+    const { rutUsuarioSubrogado, rutUsuarioSubrogante, fechaInicio, fechaFin } = validationResult.data
 
     const fechaInicioDate = parseDateFromDots(fechaInicio)
     const fechaFinDate = parseDateFromDots(fechaFin)
@@ -91,7 +107,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(): Promise<NextResponse<ApiResponse>> {
   try {
     const session = await getSession()
 

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { getSession } from '@/lib/backend/lib/jwt'
-import { ApiResponse } from '@/lib/backend/types'
+import { getSession } from '@/lib/server/jwt'
+import { ApiResponse } from '@/lib/types'
 
-export async function GET() {
+export async function GET(): Promise<NextResponse<ApiResponse>> {
   try {
     const session = await getSession()
 

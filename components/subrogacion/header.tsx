@@ -1,6 +1,7 @@
 'use client'
 
-import { useAuth } from '../context/auth-context'
+import Image from 'next/image'
+import { useAuth } from '@/components/providers/auth-provider'
 import { Button } from '@/components/ui/button'
 import { LogOut, User } from 'lucide-react'
 
@@ -8,14 +9,17 @@ export function Header() {
   const { user, logout } = useAuth()
 
   return (
-    <header className="text-primary-foreground shadow-lg" style={{ backgroundColor: '#2D72D9' }}>
+    <header className="text-primary-foreground shadow-lg bg-cmp-blue">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
-            <img
+            <Image
               src="/images/logo-cmp.png"
               alt="CMP Logo"
-              className="h-10 object-contain"
+              width={120}
+              height={40}
+              className="h-10 w-auto object-contain"
+              priority
             />
             <div className="hidden sm:block">
               <h1 className="text-lg font-semibold">Sistema de Subrogación</h1>
@@ -42,3 +46,4 @@ export function Header() {
     </header>
   )
 }
+

@@ -1,8 +1,8 @@
 'use client'
 
-import { AuthProvider, useAuth } from '@/components/frontend/context/auth-context'
-import { LoginForm } from '@/components/frontend/components/login-form'
-import { Dashboard } from '@/components/frontend/components/dashboard'
+import { AuthProvider, useAuth } from '@/components/providers/auth-provider'
+import { LoginForm } from '@/components/subrogacion/login-form'
+import { Dashboard } from '@/components/subrogacion/dashboard'
 import { Loader2 } from 'lucide-react'
 
 function AppContent() {
@@ -10,7 +10,7 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#2D72D9' }}>
+      <div className="min-h-screen flex items-center justify-center bg-cmp-blue">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary-foreground mx-auto mb-4" />
           <p className="text-primary-foreground">Cargando...</p>

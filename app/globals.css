@@ -118,6 +118,9 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-cmp-blue: var(--cmp-blue);
+  --color-cmp-blue-dark: var(--cmp-blue-dark);
+  --color-cmp-blue-light: var(--cmp-blue-light);
 }
 
 @layer base {
