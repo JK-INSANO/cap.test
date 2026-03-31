@@ -110,9 +110,6 @@ export function LoginForm() {
 
             {process.env.NODE_ENV === 'development' && (
               <div className="mt-6 pt-4 border-t text-center">
-                <p className="text-xs text-muted-foreground">
-                  Usuario demo: <span className="font-medium">admin</span> / Contraseña: <span className="font-medium">admin123</span>
-                </p>
               </div>
             )}
           </CardContent>

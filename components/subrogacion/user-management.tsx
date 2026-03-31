@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, CheckCircle2, UserPlus, Shield } from 'lucide-react'
 import { formatISOToDisplay } from '@/lib/date-utils'
 import { TablePaginationControls } from '@/components/ui/table-pagination'
+import { createUser, listUsers } from '@/lib/api/users'
 
 interface UserInfo {
   id: string
@@ -38,11 +39,8 @@ export function UserManagement() {
 
   const fetchUsers = async (page: number = 1, role: 'ALL' | 'USER' | 'ADMIN' = roleFilter) => {
     try {
-      const params = new URLSearchParams({ page: String(page) })
-      if (role !== 'ALL') params.set('role', role)
-      const response = await fetch(`/api/users?${params}`)
-      const data = await response.json()
-      if (data.success) {
+      const data = await listUsers(page, role === 'ALL' ? undefined : role)
+      if (data.success && data.data) {
         setUsers(data.data)
         setUsersTotal(data.meta?.total ?? 0)
         setUsersTotalPages(data.meta?.totalPages ?? 1)
@@ -64,15 +62,9 @@ export function UserManagement() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+      const data = await createUser(formData)
 
-      const data = await response.json()
-
-      if (response.ok && data.success) {
+      if (data.success && data.data) {
         setSuccess(`Usuario "${data.data.username}" creado exitosamente.`)
         setFormData({ username: '', email: '', password: '', role: 'USER' })
         fetchUsers(1, roleFilter)
