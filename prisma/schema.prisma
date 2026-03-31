@@ -8,11 +8,17 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id            String         @id @default(cuid())
   username      String         @unique
-  password      String         
+  password      String
   email         String         @unique
+  role          Role           @default(USER)
   subrogaciones Subrogacion[]  @relation("UserHistory")
   createdAt     DateTime       @default(now())
 }

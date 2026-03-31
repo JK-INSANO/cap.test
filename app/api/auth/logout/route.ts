@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { clearSessionCookie } from '@/lib/backend/lib/jwt'
-import { ApiResponse } from '@/lib/backend/types'
+import { clearSessionCookie } from '@/lib/server/jwt'
+import { ApiResponse } from '@/lib/types'
 
-export async function POST() {
+export async function POST(): Promise<NextResponse<ApiResponse>> {
   try {
     await clearSessionCookie()
 

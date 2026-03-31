@@ -2,10 +2,13 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
+type Role = 'USER' | 'ADMIN'
+
 interface User {
   userId: string
   username: string
   email: string
+  role: Role
 }
 
 interface AuthContextType {
@@ -85,3 +88,4 @@ export function useAuth() {
   }
   return context
 }
+
