@@ -12,6 +12,7 @@ import { Subrogacion } from '@/lib/types'
 import { formatDateToDots, formatISOToDisplay } from '@/lib/date-utils'
 import { useAuth } from '@/components/providers/auth-provider'
 import { TablePaginationControls } from '@/components/ui/table-pagination'
+import { createSubrogacion, listSubrogaciones } from '@/lib/api/subrogacion'
 
 export function SubrogacionForm() {
   const { user } = useAuth()
@@ -74,21 +75,15 @@ export function SubrogacionForm() {
       const cleanRutSubrogado = formData.rutUsuarioSubrogado.replace(/\./g, '')
       const cleanRutSubrogante = formData.rutUsuarioSubrogante.replace(/\./g, '')
 
-      const response = await fetch('/api/subrogacion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rutUsuarioSubrogado: cleanRutSubrogado,
-          rutUsuarioSubrogante: cleanRutSubrogante,
-          fechaInicio: formatDateToDots(formData.fechaInicio),
-          fechaFin: formatDateToDots(formData.fechaFin),
-        }),
+      const data = await createSubrogacion({
+        rutUsuarioSubrogado: cleanRutSubrogado,
+        rutUsuarioSubrogante: cleanRutSubrogante,
+        fechaInicio: formatDateToDots(formData.fechaInicio),
+        fechaFin: formatDateToDots(formData.fechaFin),
       })
 
-      const data = await response.json()
-
-      if (response.ok && data.success) {
-        setSuccess(`Subrogación registrada. Job ID: ${data.jobUid}`)
+      if (data.success && data.data) {
+        setSuccess(`Subrogación registrada. Job ID: ${data.jobUid ?? 'N/A'}`)
         setFormData({
           rutUsuarioSubrogado: '',
           rutUsuarioSubrogante: '',
@@ -110,9 +105,8 @@ export function SubrogacionForm() {
   const fetchSubrogaciones = useCallback(async (page: number = 1) => {
     setHistoryLoading(true)
     try {
-      const response = await fetch(`/api/subrogacion?page=${page}`)
-      const data = await response.json()
-      if (data.success) {
+      const data = await listSubrogaciones(page)
+      if (data.success && data.data) {
         setSubrogaciones(data.data)
         setHistoryTotal(data.meta?.total ?? 0)
         setHistoryTotalPages(data.meta?.totalPages ?? 1)

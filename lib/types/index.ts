@@ -1,11 +1,26 @@
 export type Role = 'USER' | 'ADMIN'
 
+export interface SessionUser {
+  userId: string
+  username: string
+  email: string
+  role: Role
+}
+
 export interface User {
   id: string
   username: string
   email: string
   password: string
   role: Role
+}
+
+export interface UserListItem {
+  id: string
+  username: string
+  email: string
+  role: Role
+  createdAt: string
 }
 
 export interface Subrogacion {
@@ -22,6 +37,13 @@ export interface Subrogacion {
 export interface LoginRequest {
   username: string
   password: string
+}
+
+export interface UserCreateRequest {
+  username: string
+  email: string
+  password: string
+  role: Role
 }
 
 export interface SubrogacionRequest {

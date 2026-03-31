@@ -1,18 +1,11 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-
-type Role = 'USER' | 'ADMIN'
-
-interface User {
-  userId: string
-  username: string
-  email: string
-  role: Role
-}
+import { login as loginApi, logout as logoutApi, getSession } from '@/lib/api/auth'
+import { SessionUser } from '@/lib/types'
 
 interface AuthContextType {
-  user: User | null
+  user: SessionUser | null
   isLoading: boolean
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => Promise<void>
@@ -21,7 +14,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<SessionUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -30,11 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSession = async () => {
     try {
-      const response = await fetch('/api/auth/session')
-      const data = await response.json()
+      const session = await getSession()
 
-      if (data.success && data.data) {
-        setUser(data.data)
+      if (session.success && session.data) {
+        setUser(session.data)
       }
     } catch (error) {
       console.error('Session check failed:', error)
@@ -45,20 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      })
+      const result = await loginApi({ username, password })
 
-      const data = await response.json()
-
-      if (data.success && data.data) {
-        setUser(data.data)
+      if (result.success && result.data) {
+        setUser(result.data)
         return { success: true }
       }
 
-      return { success: false, error: data.error || 'Error al iniciar sesión' }
+      return { success: false, error: result.error || 'Error al iniciar sesión' }
     } catch (error) {
       console.error('Login failed:', error)
       return { success: false, error: 'Error de conexión' }
@@ -67,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await logoutApi()
       setUser(null)
     } catch (error) {
       console.error('Logout failed:', error)
