@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,8 +10,12 @@ import { ErrorAlert } from '@/components/ui/error-alert'
 import { Loader2, CheckCircle2, FileText, Calendar, Users } from 'lucide-react'
 import { Subrogacion } from '@/lib/types'
 import { formatDateToDots, formatISOToDisplay } from '@/lib/date-utils'
+import { useAuth } from '@/components/providers/auth-provider'
+import { TablePaginationControls } from '@/components/ui/table-pagination'
 
 export function SubrogacionForm() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
   interface SubrogacionFormData {
     rutUsuarioSubrogado: string
     rutUsuarioSubrogante: string
@@ -30,6 +34,10 @@ export function SubrogacionForm() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [subrogaciones, setSubrogaciones] = useState<Subrogacion[]>([])
   const [showHistory, setShowHistory] = useState<boolean>(false)
+  const [historyPage, setHistoryPage] = useState(1)
+  const [historyLoading, setHistoryLoading] = useState<boolean>(false)
+  const [historyTotal, setHistoryTotal] = useState<number>(0)
+  const [historyTotalPages, setHistoryTotalPages] = useState<number>(1)
 
   const formatRut = (value: string) => {
     let rut = value.replace(/[^0-9kK]/g, '')
@@ -99,19 +107,32 @@ export function SubrogacionForm() {
     }
   }
 
-  const fetchSubrogaciones = async () => {
+  const fetchSubrogaciones = useCallback(async (page: number = 1) => {
+    setHistoryLoading(true)
     try {
-      const response = await fetch('/api/subrogacion')
+      const response = await fetch(`/api/subrogacion?page=${page}`)
       const data = await response.json()
-      if (data.success) setSubrogaciones(data.data)
+      if (data.success) {
+        setSubrogaciones(data.data)
+        setHistoryTotal(data.meta?.total ?? 0)
+        setHistoryTotalPages(data.meta?.totalPages ?? 1)
+        setHistoryPage(page)
+      }
     } catch (err) {
       console.error('Fetch error:', err)
+    } finally {
+      setHistoryLoading(false)
     }
-  }
+  }, [])
 
   const handleShowHistory = () => {
-    if (!showHistory) fetchSubrogaciones()
+    if (!showHistory) {
+      setSubrogaciones([])
+      setHistoryTotal(0)
+      fetchSubrogaciones(1)
+    }
     setShowHistory(!showHistory)
+    setHistoryPage(1)
   }
 
   return (
@@ -240,31 +261,46 @@ export function SubrogacionForm() {
             <CardTitle className="text-lg">Historial Reciente</CardTitle>
           </CardHeader>
           <CardContent>
-            {subrogaciones.length === 0 ? (
+            {historyLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-[var(--cmp-blue)]" />
+                <span className="ml-2 text-sm text-muted-foreground">Cargando historial...</span>
+              </div>
+            ) : subrogaciones.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">No hay registros</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-2 font-medium">Subrogado</th>
-                      <th className="text-left py-3 px-2 font-medium">Subrogante</th>
-                      <th className="text-left py-3 px-2 font-medium">Inicio</th>
-                      <th className="text-left py-3 px-2 font-medium">Fin</th>
-                    </tr>
-                  </thead>
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-2 font-medium">Subrogado</th>
+                        <th className="text-left py-3 px-2 font-medium">Subrogante</th>
+                        <th className="text-left py-3 px-2 font-medium">Inicio</th>
+                        <th className="text-left py-3 px-2 font-medium">Fin</th>
+                        {isAdmin && <th className="text-left py-3 px-2 font-medium">Registrado por</th>}
+                      </tr>
+                    </thead>
                     <tbody>
                       {subrogaciones.map((sub) => (
-                          <tr key={sub.id} className="border-b last:border-0">
-                            <td className="py-3 px-2">{sub.rutUsuarioSubrogado}</td>
-                            <td className="py-3 px-2">{sub.rutUsuarioSubrogante}</td>
-                            <td className="py-3 px-2">{formatISOToDisplay(String(sub.fechaInicio))}</td>
-                            <td className="py-3 px-2">{formatISOToDisplay(String(sub.fechaFin))}</td>
-                          </tr>
+                        <tr key={sub.id} className="border-b last:border-0">
+                          <td className="py-3 px-2">{sub.rutUsuarioSubrogado}</td>
+                          <td className="py-3 px-2">{sub.rutUsuarioSubrogante}</td>
+                          <td className="py-3 px-2">{formatISOToDisplay(String(sub.fechaInicio))}</td>
+                          <td className="py-3 px-2">{formatISOToDisplay(String(sub.fechaFin))}</td>
+                          {isAdmin && <td className="py-3 px-2">{sub.authorUsername ?? '—'}</td>}
+                        </tr>
                       ))}
                     </tbody>
-                </table>
-              </div>
+                  </table>
+                </div>
+                <TablePaginationControls
+                  total={historyTotal}
+                  currentPage={historyPage}
+                  totalPages={historyTotalPages}
+                  onPageChange={(p) => fetchSubrogaciones(p)}
+                />
+              </>
             )}
           </CardContent>
         </Card>

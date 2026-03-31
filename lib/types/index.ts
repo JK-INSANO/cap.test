@@ -1,8 +1,11 @@
+export type Role = 'USER' | 'ADMIN'
+
 export interface User {
   id: string
   username: string
   email: string
   password: string
+  role: Role
 }
 
 export interface Subrogacion {
@@ -13,6 +16,7 @@ export interface Subrogacion {
   fechaFin: string
   createdAt: string
   createdBy: string
+  authorUsername?: string
 }
 
 export interface LoginRequest {
@@ -27,10 +31,17 @@ export interface SubrogacionRequest {
   fechaFin: string
 }
 
+export interface PaginationMeta {
+  total: number
+  page: number
+  totalPages: number
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   message?: string
   error?: string
+  meta?: PaginationMeta
 }
 

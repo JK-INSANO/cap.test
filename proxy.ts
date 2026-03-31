@@ -4,7 +4,7 @@ import { jwtVerify } from 'jose'
 const TOKEN_NAME = 'cmp-auth-token'
 
 /** Rutas protegidas que requieren autenticación */
-const PROTECTED_ROUTES = ['/api/subrogacion']
+const PROTECTED_ROUTES = ['/api/subrogacion', '/api/users']
 
 /** Rutas públicas de autenticación (no requieren token) */
 const PUBLIC_AUTH_ROUTES = ['/api/auth/login', '/api/auth/logout']
@@ -48,6 +48,6 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  matcher: ['/api/subrogacion/:path*'],
+  matcher: ['/api/subrogacion/:path*', '/api/users/:path*'],
 }
 

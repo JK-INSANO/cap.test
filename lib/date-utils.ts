@@ -1,7 +1,3 @@
-/**
- * Utilidades centralizadas para el manejo de fechas.
- * Evita duplicación de lógica de formateo entre frontend y backend.
- */
 
 /**
  * Convierte una fecha de formato YYYY-MM-DD (input HTML) a DD.MM.YYYY (SAP)

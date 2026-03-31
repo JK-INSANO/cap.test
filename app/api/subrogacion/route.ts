@@ -107,7 +107,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse>>
   }
 }
 
-export async function GET(): Promise<NextResponse<ApiResponse>> {
+export async function GET(request: Request): Promise<NextResponse<ApiResponse>> {
   try {
     const session = await getSession()
 
@@ -118,18 +118,34 @@ export async function GET(): Promise<NextResponse<ApiResponse>> {
       )
     }
 
-    const subrogaciones = await prisma.subrogacion.findMany({
-      where: {
-        createdBy: session.userId
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    const url = new URL(request.url)
+    const page = Math.max(1, Number(url.searchParams.get('page') ?? '1'))
+    const pageSize = 10
+
+    const isAdmin = session.role === 'ADMIN'
+    const where = isAdmin ? {} : { createdBy: session.userId }
+
+    const [subrogaciones, total] = await Promise.all([
+      prisma.subrogacion.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: isAdmin ? { author: { select: { username: true } } } : undefined,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.subrogacion.count({ where }),
+    ])
+
+    // Aplanar authorUsername para el frontend
+    const data = subrogaciones.map((sub) => ({
+      ...sub,
+      authorUsername: 'author' in sub ? (sub.author as { username: string }).username : undefined,
+    }))
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: subrogaciones,
+      data,
+      meta: { total, page, totalPages: Math.ceil(total / pageSize) },
     })
   } catch (error) {
     console.error('Get subrogaciones error:', error)

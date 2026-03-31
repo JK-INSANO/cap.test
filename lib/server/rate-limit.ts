@@ -1,7 +1,4 @@
-/**
- * Rate Limiter en memoria para proteger endpoints sensibles.
- * En producción con múltiples instancias, considerar usar Redis.
- */
+
 
 interface RateLimitEntry {
   count: number

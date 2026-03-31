@@ -19,6 +19,7 @@ export async function GET(): Promise<NextResponse<ApiResponse>> {
         userId: session.userId,
         username: session.username,
         email: session.email,
+        role: session.role,
       },
     })
   } catch (error) {

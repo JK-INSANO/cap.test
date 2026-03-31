@@ -3,10 +3,18 @@
 import Image from 'next/image'
 import { useAuth } from '@/components/providers/auth-provider'
 import { Button } from '@/components/ui/button'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, User, Users, FileText } from 'lucide-react'
 
-export function Header() {
+export type Page = 'subrogacion' | 'users'
+
+interface HeaderProps {
+  currentPage?: Page
+  onNavigate?: (page: Page) => void
+}
+
+export function Header({ currentPage = 'subrogacion', onNavigate }: HeaderProps) {
   const { user, logout } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
 
   return (
     <header className="text-primary-foreground shadow-lg bg-cmp-blue">
@@ -27,6 +35,34 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Navegación */}
+            {isAdmin && onNavigate && (
+              <nav className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onNavigate('subrogacion')}
+                  className={`text-primary-foreground hover:bg-[#1e5bb8] hover:text-primary-foreground ${
+                    currentPage === 'subrogacion' ? 'bg-[#1e5bb8]' : ''
+                  }`}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Subrogación</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onNavigate('users')}
+                  className={`text-primary-foreground hover:bg-[#1e5bb8] hover:text-primary-foreground ${
+                    currentPage === 'users' ? 'bg-[#1e5bb8]' : ''
+                  }`}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Usuarios</span>
+                </Button>
+              </nav>
+            )}
+
             <div className="flex items-center gap-2 text-sm">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">{user?.username}</span>

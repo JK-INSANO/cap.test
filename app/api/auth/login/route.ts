@@ -64,6 +64,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse>>
       userId: user.id,
       username: user.username,
       email: user.email,
+      role: user.role,
     })
 
     await setSessionCookie(token)
@@ -74,6 +75,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse>>
         userId: user.id,
         username: user.username,
         email: user.email,
+        role: user.role,
       },
       message: 'Inicio de sesión exitoso',
     })

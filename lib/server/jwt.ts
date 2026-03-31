@@ -13,6 +13,7 @@ export interface JWTPayload {
   userId: string
   username: string
   email: string
+  role: 'USER' | 'ADMIN'
   exp?: number
 }
 
