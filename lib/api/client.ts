@@ -22,7 +22,7 @@ export async function apiFetch<T, X extends Extra = Extra>(
   try {
     json = await response.json()
   } catch {
-    // ignore parse errors; json stays empty
+    
   }
 
   const success = response.ok && json.success === true
