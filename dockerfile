@@ -22,6 +22,8 @@ COPY . .
 # Deshabilitamos telemetría de Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 
+ENV JWT_SECRET="secreto_temporal_solo_para_compilar"
+
 # Compilamos la aplicación
 RUN npm run build
 

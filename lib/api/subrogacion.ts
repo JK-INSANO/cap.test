@@ -1,7 +1,7 @@
 import { apiFetch } from '@/lib/api/client'
 import { Subrogacion, SubrogacionRequest } from '@/lib/types'
 
-interface CreateSubrogacionExtras {
+type CreateSubrogacionExtras ={
   jobUid?: string
 }
 
