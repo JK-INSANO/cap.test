@@ -1,6 +1,6 @@
 import { ApiResponse } from '@/lib/types'
 
-type Extra = Record<string, unknown>
+type Extra = object
 
 interface ApiOptions extends RequestInit {}
 

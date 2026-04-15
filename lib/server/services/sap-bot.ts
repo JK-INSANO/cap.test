@@ -1,6 +1,15 @@
 /**
  * INTERFACES DE DATOS
  */
+export interface CreacionRolBotPayload {
+  rolPorCrear: string;
+  transacciones: string | null;
+}
+
+export interface AsignacionRolBotPayload {
+  rut: string;
+  rol: string;
+}
 interface SapTokenResponse {
   access_token: string;
   token_type: string;
@@ -102,6 +111,96 @@ export async function ejecutarBotSubrogacion(datos: SubrogacionBotPayload) {
   } catch (error) {
     console.error("Fallo en ejecutarBotSubrogacion:", error);
     return { success: false, error: "Fallo en la ejecución del bot" };
+  }
+}
+
+/**
+ * 3. EJECUCIÓN DEL BOT DE CREACIÓN DE ROL
+ * Envía la orden de creación de rol al Runtime de SAP Build Process Automation
+ */
+export async function ejecutarBotCreacionRol(datos: CreacionRolBotPayload) {
+  const url = process.env.SAP_IRPA_URL_CREATION_ROLE;
+  const apiKey = process.env.SAP_IRPA_API_KEY;
+
+  if (!url || !apiKey) {
+    throw new Error("Configuración incompleta: Revisa SAP_IRPA_URL_CREATION_ROLE y SAP_IRPA_API_KEY en el .env");
+  }
+
+  const token = await getFreshToken();
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'irpa-api-key': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        invocationContext: "${invocation_context}",
+        input: {
+          rol_por_crear: datos.rolPorCrear,
+          transacciones: datos.transacciones
+        }
+      })
+    });
+
+    const resultData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(`Error SAP: ${response.status} - ${JSON.stringify(resultData)}`);
+    }
+
+    return { success: true, jobUid: resultData.jobUid };
+
+  } catch (error) {
+    console.error("Fallo en ejecutarBotCreacionRol:", error);
+    return { success: false, error: "Fallo en la ejecución del bot de creación de rol" };
+  }
+}
+
+/**
+ * 4. EJECUCIÓN DEL BOT DE ASIGNACIÓN DE ROL
+ * Envía la orden de asignación de rol al Runtime de SAP Build Process Automation
+ */
+export async function ejecutarBotAsignacionRol(datos: AsignacionRolBotPayload) {
+  const url = process.env.SAP_IRPA_URL_ASSIGN_ROLE;
+  const apiKey = process.env.SAP_IRPA_API_KEY;
+
+  if (!url || !apiKey) {
+    throw new Error("Configuración incompleta: Revisa SAP_IRPA_URL_ASSIGN_ROLE y SAP_IRPA_API_KEY en el .env");
+  }
+
+  const token = await getFreshToken();
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'irpa-api-key': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        invocationContext: "${invocation_context}",
+        input: {
+          rut: datos.rut,
+          rol: datos.rol,
+        }
+      })
+    });
+
+    const resultData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(`Error SAP: ${response.status} - ${JSON.stringify(resultData)}`);
+    }
+
+    return { success: true, jobUid: resultData.jobUid };
+
+  } catch (error) {
+    console.error("Fallo en ejecutarBotAsignacionRol:", error);
+    return { success: false, error: "Fallo en la ejecución del bot de asignación de rol" };
   }
 }
 

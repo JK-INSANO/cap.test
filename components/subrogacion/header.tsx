@@ -3,9 +3,9 @@
 import Image from 'next/image'
 import { useAuth } from '@/components/providers/auth-provider'
 import { Button } from '@/components/ui/button'
-import { LogOut, User, Users, FileText } from 'lucide-react'
+import { LogOut, User, Users, FileText, ShieldCheck } from 'lucide-react'
 
-export type Page = 'subrogacion' | 'users'
+export type Page = 'subrogacion' | 'users' | 'roles'
 
 interface HeaderProps {
   currentPage?: Page
@@ -59,6 +59,17 @@ export function Header({ currentPage = 'subrogacion', onNavigate }: HeaderProps)
                 >
                   <Users className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Usuarios</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onNavigate('roles')}
+                  className={`text-primary-foreground hover:bg-[#1e5bb8] hover:text-primary-foreground ${
+                    currentPage === 'roles' ? 'bg-[#1e5bb8]' : ''
+                  }`}
+                >
+                  <ShieldCheck className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Roles</span>
                 </Button>
               </nav>
             )}
